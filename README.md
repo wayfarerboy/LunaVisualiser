@@ -3,7 +3,7 @@ LunaVisualiser.py - An audio visualiser built in Python
 
 ## DESCRIPTION
 
-LunaVisualiser is an audio visualiser that allows the user to monitor specific frequencies and amplitudes of live audio.
+LunaVisualiser is a work-in-progress audio visualiser that allows the user to monitor specific frequencies and amplitudes of live audio.
 
 Each of these monitors can then be assigned or passed to generic visualiser modules - to be written at a later date.
 
