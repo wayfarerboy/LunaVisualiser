@@ -20,10 +20,10 @@ LunaVisualiser currently uses the following python libraries:
 
 And you can install all of these in Ubuntu using this handy single line:
 
-<blockquote><p>sudo apt-get install python-opengl python-pyaudio python-numpy python-aubio</p></blockquote>
+    sudo apt-get install python-opengl python-pyaudio python-numpy python-aubio
 
 ## USAGE
 
 To start the visualiser, enter the following on the command line:
 
-<blockquote><p>python LunaVisualiser.py</p></blockquote>
+    python LunaVisualiser.py
