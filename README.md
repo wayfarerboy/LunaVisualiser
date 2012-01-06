@@ -17,10 +17,11 @@ LunaVisualiser currently uses the following python libraries:
 * python-pyaudio
 * python-numpy
 * python-aubio
+* python-psutil
 
 And you can install all of these in Ubuntu using this handy single line:
 
-    sudo apt-get install python-opengl python-pyaudio python-numpy python-aubio
+    sudo apt-get install python-opengl python-pyaudio python-numpy python-aubio python-psutil
 
 ## USAGE
 

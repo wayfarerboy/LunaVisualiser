@@ -2,7 +2,7 @@ import pyaudio
 import aubio
 import numpy as np
 import struct
-import pygame
+import wave
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
@@ -14,10 +14,11 @@ import math
 
 class AudioGrabber:
 
-  def __init__(self,mouse,bufferSize=512, sampleRate=44100, split = 0.4, factor = 0.2):
+  def __init__(self, mouse, audioSrc = 'pulse', bufferSize = 512, sampleRate = 44100, split = 0.4, factor = 0.2):
     self.bufferSize = bufferSize
     self.sampleRate = sampleRate
-    self._stream = None
+    self.stream = None
+    self.audioSrc = audioSrc
     self.data = np.array([])
     self.split = split
     self.factor = factor
@@ -29,21 +30,29 @@ class AudioGrabber:
     self.selections = []
 
   def update(self):
-    if self._stream is None:
+    if self.stream is None:
         self.p = pyaudio.PyAudio()
-        for x in range(self.p.get_device_count()):
-          if self.p.get_device_info_by_index(x)['name'] == 'pulse':
-            break;
-        if x < self.p.get_device_count()-1:
-          self._stream = self.p.open(format=pyaudio.paInt16, \
-                                     channels=1, \
-                                     rate=self.sampleRate, \
-                                     input=True, \
-                                     frames_per_buffer=self.bufferSize*2, \
-                                     input_device_index=x)
-          threading.Thread(target=self.stream).start()
+        if len(self.audioSrc) > 5:
+          wf = wave.open(self.audioSrc, 'rb')
+          self.sampleRate = wf.getframerate()
+          self.stream = self.p.open(format = self.p.get_format_from_width(wf.getsampwidth()),
+                                    channels = wf.getnchannels(),
+                                    rate = wf.getframerate(),
+                                    output = True)
         else:
-          raise Exception("Could not find pulse audio device")
+          for x in range(self.p.get_device_count()):
+            if self.p.get_device_info_by_index(x)['name'] == audioSrc:
+              break;
+          if x < self.p.get_device_count()-1:
+            self.stream = self.p.open(format = pyaudio.paInt16, 
+                                      channels = 1, 
+                                      rate = self.sampleRate, 
+                                      input = True, 
+                                      frames_per_buffer = self.bufferSize*2, 
+                                      input_device_index = x)
+          else:
+            raise Exception("Could not find pulse audio device")
+        threading.Thread(target=self.getstream).start()
 
     if len(self.chunks) > 0:
       d = np.fromstring(self.chunks.pop(0), dtype=np.short)
@@ -149,10 +158,10 @@ class AudioGrabber:
     self.ffts = self.ffts[1:]
     return np.average(np.array(self.ffts),0)
 
-  def stream(self):
+  def getstream(self):
     while self.STOPPED is False:
       try:
-        self.chunks.append(self._stream.read(self.bufferSize))
+        self.chunks.append(self.stream.read(self.bufferSize))
       except IOError,e:
         if e[1] == pyaudio.paInputOverflowed:
           pass
@@ -165,6 +174,6 @@ class AudioGrabber:
     self.close()
     
   def close(self):
-    self._stream.stop_stream()
-    self._stream.close()
+    self.stream.stopstream()
+    self.stream.close()
     self.p.terminate()

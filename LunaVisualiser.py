@@ -97,7 +97,7 @@ def main():
   # Okay, like the C version we retain the window id to use when closing, but for those of you new
   # to Python (like myself), remember this assignment would make the variable local and not global
   # if it weren't for the global declaration at the start of main.
-  window = glutCreateWindow("Generamics")
+  window = glutCreateWindow("LunaVisualiser")
   
   #try:
   #except IndexError:
@@ -132,7 +132,7 @@ def main():
   # Initialize our window. 
   InitGL(640, 480)
 
-  audio = ag.AudioGrabber(mouse,bufferSize=1024,sampleRate=44100, split=0.3, factor=0.2)
+  audio = ag.AudioGrabber(mouse = 'mouse', audioSrc = 'groove.wav', bufferSize = 1024, sampleRate = 44100, split = 0.3, factor = 0.2)
 
 # Print message to console, and kick off the main to get it rolling.
 print "Hit ESC key to quit."
