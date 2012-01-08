@@ -132,7 +132,9 @@ def main():
   # Initialize our window. 
   InitGL(640, 480)
 
-  audio = ag.AudioGrabber(mouse = 'mouse', audioSrc = 'groove.wav', bufferSize = 1024, sampleRate = 44100, split = 0.3, factor = 0.2)
+  arg = sys.argv
+  if arg[1] == "": arg[1] = "pulse"
+  audio = ag.AudioGrabber(mouse = mouse, audioSrc = arg[1], bufferSize = 1024, sampleRate = 44100, split = 0.3, factor = 0.2)
 
 # Print message to console, and kick off the main to get it rolling.
 print "Hit ESC key to quit."

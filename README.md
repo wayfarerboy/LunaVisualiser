@@ -13,15 +13,17 @@ My initial inspiration for creating this project was to replicate visualisers I 
 
 LunaVisualiser currently uses the following python libraries:
 
-* python-opengl
-* python-pyaudio
-* python-numpy
-* python-aubio
-* python-psutil
+* opengl
+* pyaudio
+* numpy
+* aubio
+* psutil
+* pymad
+* pyao
 
 And you can install all of these in Ubuntu using this handy single line:
 
-    sudo apt-get install python-opengl python-pyaudio python-numpy python-aubio python-psutil
+    sudo apt-get install python-opengl python-pyaudio python-numpy python-aubio python-psutil python-pymad python-pyao
 
 ## USAGE
 

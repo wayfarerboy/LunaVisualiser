@@ -1,16 +1,9 @@
-import pyaudio
-import aubio
-import numpy as np
-import struct
-import wave
+import pyaudio, aubio, numpy as np, struct, wave, mad
+import threading, time, datetime, math, ao
 
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
-
-import threading
-import time, datetime
-import math
 
 class AudioGrabber:
 
@@ -28,31 +21,27 @@ class AudioGrabber:
     self.STOPPED = False
     self.mouse = mouse
     self.selections = []
-
+    self.buf = None
+    self.MOUSE = False
+    
   def update(self):
     if self.stream is None:
         self.p = pyaudio.PyAudio()
         if len(self.audioSrc) > 5:
-          wf = wave.open(self.audioSrc, 'rb')
-          self.sampleRate = wf.getframerate()
-          self.stream = self.p.open(format = self.p.get_format_from_width(wf.getsampwidth()),
-                                    channels = wf.getnchannels(),
-                                    rate = wf.getframerate(),
-                                    output = True)
+          self.mf = mad.MadFile(self.audioSrc)
+          self.sampleRate = self.mf.samplerate()
+          self.stream = self.p.open(format = pyaudio.paInt32, channels = 2, rate = self.sampleRate, output = True)
+          self.dev = ao.AudioDevice('pulse', rate = self.sampleRate)
+          threading.Thread(target=self.getmp3stream).start()
         else:
           for x in range(self.p.get_device_count()):
             if self.p.get_device_info_by_index(x)['name'] == audioSrc:
               break;
           if x < self.p.get_device_count()-1:
-            self.stream = self.p.open(format = pyaudio.paInt16, 
-                                      channels = 1, 
-                                      rate = self.sampleRate, 
-                                      input = True, 
-                                      frames_per_buffer = self.bufferSize*2, 
-                                      input_device_index = x)
+            self.stream = self.p.open(format = pyaudio.paInt16, channels = 1, rate = self.sampleRate, input = True, frames_per_buffer = self.bufferSize*2, input_device_index = x)
           else:
             raise Exception("Could not find pulse audio device")
-        threading.Thread(target=self.getstream).start()
+          threading.Thread(target=self.getstream).start()
 
     if len(self.chunks) > 0:
       d = np.fromstring(self.chunks.pop(0), dtype=np.short)
@@ -86,12 +75,12 @@ class AudioGrabber:
         count += 1.0
       glEnd()
 
-      click = self.checkClick()
+      click = self.mouse.checkClick()
       select = self.mouse.checkSelect()
       
       for s in self.selections:
         s.update(self.data)
-      if self.checkClick() == 0: self.MOUSE = True # Check for a new click
+      if self.mouse.checkClick() == 0: self.MOUSE = True # Check for a new click
       if self.MOUSE == True:
         selection = self.mouse.getSelection() # Get current selection if mouse has registered a click
         if self.mouse.MOUSE == False: # If the mouse has been released
@@ -165,7 +154,17 @@ class AudioGrabber:
       except IOError,e:
         if e[1] == pyaudio.paInputOverflowed:
           pass
-  
+
+  def getmp3stream(self):
+    while self.STOPPED is False:
+      self.buf = self.mf.read()
+      if self.buf is not None: self.dev.play(self.buf, len(self.buf))
+      try:
+        self.chunks.append(self.buf)
+      except IOError,e:
+        if e[1] == pyaudio.paInputOverflowed:
+          pass
+
   def resize(self):
     self.winSize = np.array([(glutGet(GLUT_WINDOW_WIDTH),glutGet(GLUT_WINDOW_WIDTH)), (glutGet(GLUT_WINDOW_HEIGHT), glutGet(GLUT_WINDOW_HEIGHT))]) * np.array([(1.0,1.0),(1.0,1.0)])
 
